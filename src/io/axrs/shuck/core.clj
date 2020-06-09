@@ -45,6 +45,16 @@
      :err      (str/join \newline (persistent! err))
      :out      (str/join \newline (persistent! output))}))
 
+(defn sh!
+  "Executes shell command, capturing output, duration.
+  Throws ExceptionInfo if the process exits with a non-zero exit code."
+  [& args]
+  (let [{:keys [exit] :as result} (apply sh args)]
+    (if (zero? exit)
+      result
+      (throw (ex-info "Process exited with non-zero code"
+               (assoc result :args args))))))
+
 (defn done []
   (shutdown-agents))
 
