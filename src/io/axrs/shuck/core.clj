@@ -5,6 +5,7 @@
 
 (def ^:dynamic *print-out* false)
 (def ^:dynamic *print-err* false)
+(def ^:dynamic *print-command* false)
 (def ^:private -lock)
 
 (defn- sync-println [& more]
@@ -15,6 +16,8 @@
   "Executes shell command, capturing output, duration and exit-codes.
   Note: Remember to call `io.axrs.shuck.core/done` before process exit to cleanup any running agents"
   [& args]
+  (when *print-command*
+    (apply sync-println args))
   (let [start (System/currentTimeMillis)
         printerr (if *print-err*
                    (fn [& more]
@@ -44,6 +47,15 @@
 
 (defn done []
   (shutdown-agents))
+
+(defmacro with-print-out [& body]
+  `(binding [*print-err* true
+             *print-out* true]
+     ~@body))
+
+(defmacro with-print-command [& body]
+  `(binding [*print-command* true]
+     ~@body))
 
 (comment
   (binding [*print-out* true
